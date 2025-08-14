@@ -1,0 +1,128 @@
+package com.accessibleweb.controller.service;
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.springframework.stereotype.Service;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Service
+public class WebScraperService {
+
+    public Map<String, String> extractColors(String url) {
+        Map<String, String> colors = new LinkedHashMap<>();
+        Set<String> uniqueButtonColors = new LinkedHashSet<>(); // ✅ Stores only unique colors
+
+        try {
+            // ✅ Fetch the HTML document
+            Document doc = Jsoup.connect(url).get();
+
+            // ✅ Extract inline styles (Body background)
+            Element body = doc.body();
+            if (body != null) {
+                String bgColor = body.attr("bgcolor");
+                String bodyStyle = body.attr("style");
+
+                if (!bgColor.isEmpty()) colors.put("body-bgcolor", bgColor);
+                String extractedBodyColor = extractColorFromStyle(bodyStyle);
+                if (!extractedBodyColor.isEmpty()) colors.put("body-style", extractedBodyColor);
+            }
+
+            // ✅ Extract colors from <h1>
+            Element h1 = doc.selectFirst("h1");
+            if (h1 != null) {
+                String extractedH1Color = extractColorFromStyle(h1.attr("style"));
+                if (!extractedH1Color.isEmpty()) colors.put("h1", extractedH1Color);
+            }
+
+            // ✅ Extract unique button colors
+            Elements buttons = doc.select("button"); 
+            for (Element button : buttons) {
+                String extractedColor = extractColorFromStyle(button.attr("style"));
+                if (!extractedColor.isEmpty()) {
+                    uniqueButtonColors.add(extractedColor);
+                } else {
+                    String buttonCssColor = getComputedCssProperty(doc, "button", "background-color");
+                    if (!buttonCssColor.isEmpty()) {
+                        uniqueButtonColors.add(buttonCssColor);
+                    }
+                }
+            }
+
+            // ✅ Add unique button colors to result map
+            int buttonCount = 1;
+            for (String color : uniqueButtonColors) {
+                colors.put("button-" + buttonCount, color);
+                buttonCount++;
+            }
+
+            // ✅ Extract colors from <style> tags
+            Elements styles = doc.select("style");
+            Pattern colorPattern = Pattern.compile("(color|background-color):\\s*([^;]+);");
+
+            for (Element style : styles) {
+                Matcher matcher = colorPattern.matcher(style.html());
+                while (matcher.find()) {
+                    colors.put(matcher.group(1), matcher.group(2));
+                }
+            }
+
+            // ✅ Extract colors from external CSS files
+            extractExternalCss(doc, colors);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return colors;
+    }
+
+    private void extractExternalCss(Document doc, Map<String, String> colors) {
+        Elements links = doc.select("link[rel=stylesheet]");
+        Pattern colorPattern = Pattern.compile("(color|background-color):\\s*([^;]+);");
+
+        for (Element link : links) {
+            String cssUrl = link.absUrl("href");
+            try {
+                Document cssDoc = Jsoup.connect(cssUrl).get();
+                String cssText = cssDoc.text();
+
+                Matcher matcher = colorPattern.matcher(cssText);
+                while (matcher.find()) {
+                    colors.put(matcher.group(1), matcher.group(2));
+                }
+            } catch (IOException e) {
+                System.out.println("Failed to fetch CSS file: " + cssUrl);
+            }
+        }
+    }
+
+    private String extractColorFromStyle(String style) {
+        if (style == null || style.isEmpty()) return "";
+        Pattern colorPattern = Pattern.compile("(#[0-9a-fA-F]{3,6}|rgba?\\([^)]+\\)|hsla?\\([^)]+\\))");
+        Matcher matcher = colorPattern.matcher(style);
+        return matcher.find() ? matcher.group(1).trim() : "";
+    }
+
+    private String getComputedCssProperty(Document doc, String selector, String property) {
+        Elements styles = doc.select("style");
+        Pattern pattern = Pattern.compile(selector + "\\s*\\{[^}]*" + property + "\\s*:\\s*([^;]+);");
+
+        for (Element style : styles) {
+            Matcher matcher = pattern.matcher(style.html());
+            if (matcher.find()) {
+                return matcher.group(1).trim();
+            }
+        }
+        return "";
+    }
+
+    public static void main(String[] args) {
+        WebScraperService scraper = new WebScraperService();
+        Map<String, String> colors = scraper.extractColors("https://www.example.com"); // Replace with a real website
+        System.out.println(colors);
+    }
+}
