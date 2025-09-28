@@ -9,15 +9,15 @@ function UrlInput({ onAnalysisComplete }) {
 
   const analyzeWebsite = async () => {
   try {
-    const response = await axios.get(`/api/colors?url=${encodeURIComponent(url)}`, {
-      timeout: 10000 // 10 second timeout
-    });
+    const response = await axios.get(
+      `/api/accessibility?url=${encodeURIComponent(url)}&mode=default`
+    );
     
     if (!response.data) {
       throw new Error('Empty response from server');
     }
     
-    onAnalysisComplete(response.data);
+    onAnalysisComplete({ ...response.data, url });
   } catch (err) {
     console.error('Full error details:', {
       message: err.message,

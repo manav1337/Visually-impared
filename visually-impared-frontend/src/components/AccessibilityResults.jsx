@@ -1,8 +1,21 @@
-import CustomizationPanel from './CustomizationPanel';
+import React, { useState } from 'react';
 import PreviewPane from './PreviewPane';
 import '../styles/components/results.css';
 
 function AccessibilityResults({ data }) {
+  // Extract the background and text colors from the analysis data
+  const background = data.colorAnalysis?.primaryColors?.background?.value || '#ffffff';
+  const textColor = data.colorAnalysis?.primaryColors?.text?.value || '#000000';
+  const contrastRatio = data.colorAnalysis?.contrast?.ratio || 0;
+  const wcagRating = data.colorAnalysis?.contrast?.rating || 'Unknown';
+  
+  // Add accessibilitySettings state
+  const [accessibilitySettings, setAccessibilitySettings] = useState({
+    fontSize: 'medium',
+    highlightLinks: false,
+    textToSpeech: false
+  });
+
   return (
     <div className="results-container">
       <div className="results-grid">
@@ -12,34 +25,43 @@ function AccessibilityResults({ data }) {
           <div className="result-card contrast-card">
             <h3>Color Contrast</h3>
             <div className="color-samples">
-              <div className="color-sample" style={{ backgroundColor: data.background }}>
-                <span>Background: {data.background}</span>
+              <div className="color-sample" style={{ backgroundColor: background }}>
+                <span>Background: {background}</span>
               </div>
               <div className="color-sample" style={{ 
-                backgroundColor: data.textColor, 
-                color: data.background 
+                backgroundColor: textColor, 
+                color: background 
               }}>
-                <span>Text: {data.textColor}</span>
+                <span>Text: {textColor}</span>
               </div>
             </div>
-            <p>Contrast Ratio: {data.contrastRatio}</p>
-            <p className={`compliance ${data.wcagCompliance.toLowerCase()}`}>
-              WCAG Compliance: {data.wcagCompliance}
+            <p>Contrast Ratio: {contrastRatio}</p>
+            <p className={`compliance ${wcagRating.toLowerCase()}`}>
+              WCAG Rating: {wcagRating}
             </p>
           </div>
 
           <div className="result-card recommendations-card">
             <h3>Recommendations</h3>
             <ul>
-              {data.recommendations.map((item, index) => (
-                <li key={index}>{item}</li>
+              {data.accessibility?.warnings?.map((warning, index) => (
+                <li key={index}>{warning}</li>
               ))}
             </ul>
           </div>
         </section>
 
-        <CustomizationPanel />
-        <PreviewPane url={data.url} />
+        {/* Updated PreviewPane with new props */}
+        <PreviewPane 
+          url={data.url} 
+          analysisData={data} // Add this prop to pass the analysis data
+          accessibilitySettings={{
+            ...accessibilitySettings,
+            onFontSizeChange: (size) => setAccessibilitySettings(prev => ({...prev, fontSize: size})),
+            onHighlightLinksChange: (checked) => setAccessibilitySettings(prev => ({...prev, highlightLinks: checked})),
+            onTextToSpeechChange: (checked) => setAccessibilitySettings(prev => ({...prev, textToSpeech: checked}))
+          }} 
+        />
       </div>
     </div>
   );

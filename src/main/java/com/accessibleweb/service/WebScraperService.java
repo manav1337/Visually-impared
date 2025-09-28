@@ -202,13 +202,13 @@ public class WebScraperService {
                         "\\.[^{]*btn[^{]*|\\.[^{]*button[^{]*)[^{]*\\{[^}]*(?:background|background-color):\\s*([^;}]+)"
         );
 
-// Generic background selectors
+        // Generic background selectors
         Pattern bgPattern = Pattern.compile(
                 "(?:body|main|header|nav|section|div|article|aside|footer|" +
                         "\\.[^{]*background[^{]*|\\.[^{]*bg[^{]*)[^{]*\\{[^}]*(?:background|background-color):\\s*([^;}]+)"
         );
 
-// Generic text selectors
+        // Generic text selectors
         Pattern textPattern = Pattern.compile(
                 "(?:body|p|h[1-6]|span|a|div|\\.[^{]*text[^{]*)[^{]*\\{[^}]*color:\\s*([^;}]+)"
         );
