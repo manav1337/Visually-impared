@@ -27,7 +27,7 @@ public class AccessibilityController {
     );
 
     private static final String[] ALLOWED_DOMAINS = {
-            "w3schools.com", "example.com", "gov.uk", "edu", "org", "gov.in"
+        "https://instagram.com/","https://nymag.com/"
     };
 
     @Autowired
