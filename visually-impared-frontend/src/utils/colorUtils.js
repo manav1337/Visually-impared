@@ -14,11 +14,8 @@ export const getContrastingTextColor = (bgColor) => {
 };
 
 // Function to adjust colors for accessibility
-export const adjustColorForAccessibility = (color, isBackground = false) => {
+export const adjustColorForAccessibility = (color) => {
   // Add your actual color adjustment logic here
   // This is a placeholder implementation
-  if (isBackground) {
-    return color; // Return modified background color
-  }
   return getContrastingTextColor(color); // Return contrasting text color
 };

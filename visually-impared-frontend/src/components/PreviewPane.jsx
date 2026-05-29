@@ -33,31 +33,27 @@ function PreviewPane({ url, analysisData, accessibilitySettings }) {
       });
     }
     
-    // Apply color transformations
-    const bgColor = analysisData.colorAnalysis?.primaryColors?.background?.value || '#ffffff';
-    const textColor = analysisData.colorAnalysis?.primaryColors?.text?.value || '#000000';
+    const bgColor = '#ffffff';
+    const textColor = '#000000';
     
-    doc.body.style.backgroundColor = bgColor;
-    doc.body.style.color = textColor;
+    // doc.body.style.backgroundColor = bgColor;
+    // doc.body.style.color = textColor;
     
     // Create accessibility override styles
     const style = doc.createElement('style');
     style.textContent = `
-      * {
-        background-color: ${bgColor} !important;
-        color: ${textColor} !important;
-      }
-      
-      a {
-        color: ${adjustColorForAccessibility(textColor, 'text')} !important;
-        text-decoration: underline !important;
-      }
-      
-      :focus {
-        outline: 3px solid ${adjustColorForAccessibility(textColor, 'text')} !important;
-        outline-offset: 2px !important;
-      }
-    `;
+    
+    a {
+      color: ${adjustColorForAccessibility(textColor, 'text')} !important;
+      text-decoration: underline !important;
+      font-weight: bold !important;
+    }
+
+    :focus {
+      outline: 3px solid ${adjustColorForAccessibility(textColor, 'text')} !important;
+      outline-offset: 2px !important;
+    }
+  `;
     doc.head.appendChild(style);
     
     return doc.documentElement.outerHTML;

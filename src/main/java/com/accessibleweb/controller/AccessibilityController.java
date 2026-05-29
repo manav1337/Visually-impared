@@ -27,7 +27,7 @@ public class AccessibilityController {
     );
 
     private static final String[] ALLOWED_DOMAINS = {
-        "https://instagram.com/","https://nymag.com/"
+        "https://instagram.com/","https://nymag.com/","https://www.oatly.com/","https://books.toscrape.com/"
     };
 
     @Autowired
@@ -80,12 +80,15 @@ public class AccessibilityController {
                     .referrer("https://www.google.com")
                     .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8")
                     .header("Accept-Language", "en-US,en;q=0.9")
-                    .header("Accept-Encoding", "gzip, deflate, br")
                     .header("Connection", "keep-alive")
                     .header("Cache-Control", "no-cache")
                     .header("Pragma", "no-cache");
 
             Response response = connection.execute();
+
+
+            System.out.println("Content-Type: " + response.contentType());
+            System.out.println("Charset: " + response.charset());
 
             // Handle HTTP errors
             if (response.statusCode() != 200) {
@@ -99,11 +102,11 @@ public class AccessibilityController {
             // Clean potentially unsafe elements
             doc.select("script, noscript, iframe, frame").remove();
 
-            // Add base tag for relative URLs
-            doc.head().prependElement("base").attr("href", url);
-
+            if (doc.head() != null) {
+                doc.head().prependElement("base").attr("href", url);
+            }
             // Rewrite all URLs to go through our proxy
-            rewriteUrls(doc, url);
+            // rewriteUrls(doc, url);
 
             return ResponseEntity.ok()
                     .contentType(MediaType.TEXT_HTML)
@@ -113,6 +116,8 @@ public class AccessibilityController {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
                     .body("Network error: " + e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
+
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Server error: " + e.getMessage());
         }
