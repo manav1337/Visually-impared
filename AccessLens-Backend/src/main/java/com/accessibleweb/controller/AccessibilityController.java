@@ -87,9 +87,6 @@ public class AccessibilityController {
             Response response = connection.execute();
 
 
-            System.out.println("Content-Type: " + response.contentType());
-            System.out.println("Charset: " + response.charset());
-
             // Handle HTTP errors
             if (response.statusCode() != 200) {
                 String errorMsg = "Origin server returned error: " +
